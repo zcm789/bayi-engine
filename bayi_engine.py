@@ -1,61 +1,66 @@
-导入 json
-随机导入
-从输入导入列表、字典、元组、可选、任何
+import json
+import random
+from typing import List, Dict, Tuple, Optional, Any
 
-尝试：
-    将 matplotlib.pyplot 导入为 plt
+try:
+    import matplotlib.pyplot as plt
     MATPLOTLIB_AVAILABLE = True
-除了导入错误：
-    MATPLOTLIB_AVAILABLE = 假
-    plt=无
+except ImportError:
+    MATPLOTLIB_AVAILABLE = False
+    plt = None
 
-尝试：
-    将 pandas 导入为 pd
-    PANDAS_AVAILABLE = 真
-除了导入错误：
-    PANDAS_AVAILABLE = 假
-    pd = 无
+try:
+    import pandas as pd
+    PANDAS_AVAILABLE = True
+except ImportError:
+    PANDAS_AVAILABLE = False
+    pd = None
 
 
-八一引擎类：
-    """八易全息引擎 (64卦·智能变爻)"""
+class BaYiEngine:
+    """八易全息引擎 (64卦 · 智能变爻)"""
 
     TRIGRAM_NAMES = {
-        0b000: "坤", 0b001: "震", 0b010: "坎", 0b011: "兑☱",
-        0b100: "艮", 0b101: "离", 0b110: "巽", 0b111: "干"
+        0b000: "坤☷", 0b001: "震☳", 0b010: "坎☵", 0b011: "兑☱",
+        0b100: "艮☶", 0b101: "离☲", 0b110: "巽☴", 0b111: "乾☰"
     }
     BA_YI_CYCLE = [0b000, 0b001, 0b010, 0b011, 0b100, 0b101, 0b110, 0b111]
-    BA_YI_NAMES = ["归藏(坤)", "震易", "坎易", "兑易", "连山(艮)", "离易", "巽易", "周易(干)"]
+    BA_YI_NAMES = ["归藏(坤)", "震易", "坎易", "兑易", "连山(艮)", "离易", "巽易", "周易(乾)"]
     PURE_64_NAMES_MAP = {}
 
-    def __init__(self，种子：int = 42，internal_steps：int = 3，模式：str =“确定性”)：
-        self.seed = 种子
-        self.internal_steps = 内部_steps
-        self.模式 = 模式
-        随机种子（自我种子）
+    def __init__(self, seed: int = 42, internal_steps: int = 3, mode: str = "deterministic"):
+        self.seed = seed
+        self.internal_steps = internal_steps
+        self.mode = mode
+        random.seed(self.seed)
         self._pure_64_starts = [self._expand_to_64(t) for t in self.BA_YI_CYCLE]
+        # 初始化 PURE_64_NAMES_MAP
+        for _t in self.BA_YI_CYCLE:
+            _key = (_t << 3) | _t
+            _val = f"{self.TRIGRAM_NAMES[_t]}为{self.TRIGRAM_NAMES[_t]}"
+            self.PURE_64_NAMES_MAP[_key] = _val
 
-    @静态方法
+    @staticmethod
     def _to_bin6(n: int) -> str:
-        返回 f"{n:06b}"[::-1]
+        return f"{n:06b}"[::-1]
 
-    @静态方法
-    def _expand_to_64(三元组: int) -> int:
-        返回 (三元组 << 3) |卦象
+    @staticmethod
+    def _expand_to_64(trigram: int) -> int:
+        return (trigram << 3) | trigram
 
-    @静态方法
+    @staticmethod
     def _hamming_distance(a: int, b: int) -> int:
-        返回 bin(a ^ b).count("1")
+        return bin(a ^ b).count("1")
 
-    @静态方法
-    def _get_diff_bits(a: int, b: int) -> 列表[int]:
+    @staticmethod
+    def _get_diff_bits(a: int, b: int) -> List[int]:
         return [i for i in range(6) if ((a >> i) & 1) != ((b >> i) & 1)]
 
-    @静态方法
+    @staticmethod
     def _flip_bit(n: int, pos: int) -> int:
-        返回 n ^ (1 << 位置)
+        return n ^ (1 << pos)
 
-    @静态方法
+    @staticmethod
     def opposite(h: int) -> int:
         return h ^ 0b111111
 
